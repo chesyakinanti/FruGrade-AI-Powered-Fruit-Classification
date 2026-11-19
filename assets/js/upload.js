@@ -36,6 +36,8 @@
     stream: null,
     facingMode: 'environment', // prefer rear camera on mobile
     isOpen: false,
+    isMirrored: false,
+    availableVideoInputs: 0,
 
     open: function () {
       setTab('camera');
@@ -54,13 +56,65 @@
 
       camera.isOpen = true;
       camera.hideError();
+
+      // Restore user-saved mirror preference
+      try {
+        camera.isMirrored = localStorage.getItem('frugrade_camera_mirrored') === '1';
+      } catch (e) {
+        camera.isMirrored = false;
+      }
+      camera.applyMirror();
+
       if (dom.cameraLoading) dom.cameraLoading.classList.remove('hidden');
 
       camera.startStream();
     },
 
+    applyMirror: function () {
+      if (dom.cameraVideo) {
+        dom.cameraVideo.style.transform = camera.isMirrored ? 'scaleX(-1)' : 'scaleX(1)';
+      }
+      if (dom.cameraMirrorLabel) {
+        dom.cameraMirrorLabel.textContent = camera.isMirrored
+          ? t('upload.mirrorActive', 'Cermin Aktif')
+          : t('upload.mirrorNormal', 'Normal');
+      }
+      if (dom.cameraMirrorChip) {
+        dom.cameraMirrorChip.classList.toggle('!bg-strawberry-red', camera.isMirrored);
+        dom.cameraMirrorChip.classList.toggle('!text-white', camera.isMirrored);
+      }
+      if (dom.btnMirrorCamera) {
+        dom.btnMirrorCamera.setAttribute('aria-pressed', camera.isMirrored ? 'true' : 'false');
+        dom.btnMirrorCamera.classList.toggle('!bg-surface-container', camera.isMirrored);
+        dom.btnMirrorCamera.classList.toggle('text-forest-green', camera.isMirrored);
+        dom.btnMirrorCamera.classList.toggle('font-bold', camera.isMirrored);
+      }
+    },
+
+    toggleMirror: function (silent) {
+      camera.isMirrored = !camera.isMirrored;
+      try {
+        localStorage.setItem('frugrade_camera_mirrored', camera.isMirrored ? '1' : '0');
+      } catch (e) {}
+      camera.applyMirror();
+      if (!silent) {
+        var msg = camera.isMirrored
+          ? t('msg.mirrorEnabled', 'Cermin aktif (dibalik horizontal).')
+          : t('msg.mirrorDisabled', 'Cermin nonaktif (tampilan normal).');
+        FG.util.toast(msg, { duration: 1800 });
+      }
+    },
+
     startStream: function () {
       camera.stopStream();
+
+      // Check available cameras on device
+      if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+        navigator.mediaDevices.enumerateDevices().then(function (devices) {
+          var vids = devices.filter(function (d) { return d.kind === 'videoinput'; });
+          camera.availableVideoInputs = vids.length;
+        }).catch(function () {});
+      }
 
       var constraints = {
         audio: false, // Video only; never request audio
@@ -87,8 +141,10 @@
           camera.stream = stream;
           if (dom.cameraVideo) {
             dom.cameraVideo.srcObject = stream;
+            camera.applyMirror();
             dom.cameraVideo.onloadedmetadata = function () {
               dom.cameraVideo.play().catch(function () {});
+              camera.applyMirror();
               if (dom.cameraLoading) dom.cameraLoading.classList.add('hidden');
             };
           }
@@ -155,9 +211,15 @@
     },
 
     flip: function () {
+      // If single camera detected (e.g. laptop webcam), flip action toggles mirror orientation
+      if (camera.availableVideoInputs <= 1 && camera.stream) {
+        camera.toggleMirror(true);
+        FG.util.toast(t('msg.singleCameraFlip', 'Hanya 1 kamera terdeteksi di perangkat. Orientasi cermin dibalik.'), { duration: 2200 });
+        return;
+      }
       camera.facingMode = (camera.facingMode === 'environment') ? 'user' : 'environment';
       camera.startStream();
-      FG.util.toast(t('msg.cameraSwitched', 'Camera switched: ') + (camera.facingMode === 'user' ? 'Front' : 'Rear'), { duration: 1800 });
+      FG.util.toast(t('msg.cameraSwitched', 'Mengalihkan kamera: ') + (camera.facingMode === 'user' ? 'Depan' : 'Belakang'), { duration: 1800 });
     },
 
     capture: function () {
@@ -180,7 +242,15 @@
         dom.cameraCanvas.width = vw;
         dom.cameraCanvas.height = vh;
         var ctx = dom.cameraCanvas.getContext('2d');
-        ctx.drawImage(dom.cameraVideo, 0, 0, vw, vh);
+        if (camera.isMirrored) {
+          ctx.save();
+          ctx.translate(vw, 0);
+          ctx.scale(-1, 1);
+          ctx.drawImage(dom.cameraVideo, 0, 0, vw, vh);
+          ctx.restore();
+        } else {
+          ctx.drawImage(dom.cameraVideo, 0, 0, vw, vh);
+        }
 
         dom.cameraCanvas.toBlob(function (blob) {
           if (!blob) {
@@ -236,7 +306,10 @@
     dom.btnCameraSwitchUpload = $('#btn-camera-switch-upload');
     dom.btnCancelCamera = $('#btn-cancel-camera');
     dom.btnCaptureCamera = $('#btn-capture-camera');
+    dom.btnMirrorCamera = $('#btn-mirror-camera');
     dom.btnFlipCamera = $('#btn-flip-camera');
+    dom.cameraMirrorChip = $('#camera-mirror-chip');
+    dom.cameraMirrorLabel = $('#camera-mirror-label');
 
     dom.previewCard = $('#preview-card');
     dom.previewEmpty = $('#preview-empty');
@@ -257,6 +330,7 @@
     dom.progressPct = $('#progress-pct');
     dom.progressLabel = $('#progress-label');
     dom.errorPanel = $('#error-panel');
+    dom.errorTitle = $('#error-title');
     dom.errorCode = $('#error-code');
     dom.errorMessage = $('#error-message');
     dom.retry = $('#error-retry');
@@ -351,18 +425,27 @@
     if (!dom.errorPanel) return;
     dom.errorPanel.hidden = true;
     dom.errorPanel.classList.add('is-hidden');
+    if (dom.errorTitle) {
+      dom.errorTitle.textContent = t('upload.errorTitle', 'Analisis gagal');
+    }
   }
 
   function showError(code, message) {
     if (!dom.errorPanel) return;
     dom.errorPanel.hidden = false;
     dom.errorPanel.classList.remove('is-hidden');
+    if (dom.errorTitle) {
+      var isFileCheck = /^(UNREADABLE_IMAGE|INVALID_FORMAT|EMPTY_FILE|FILE_TOO_LARGE|IMAGE_TOO_SMALL)$/.test(code || '');
+      dom.errorTitle.textContent = isFileCheck
+        ? t('upload.fileErrorTitle', 'Berkas tidak valid')
+        : t('upload.errorTitle', 'Analisis gagal');
+    }
     if (dom.errorCode) dom.errorCode.textContent = code || 'ERROR';
     if (dom.errorMessage) dom.errorMessage.textContent = message;
     FG.util.toast(message, { type: 'error', duration: 5000 });
     if (dom.mascot) FG.fruit.setMood(dom.mascot, 'oops');
     window.setTimeout(function () { if (dom.mascot) FG.fruit.setMood(dom.mascot, null); }, 1800);
-    if (!/^(NO_FILE|INVALID_FORMAT|EMPTY_FILE|FILE_TOO_LARGE|DECODE_FAILED)$/.test(code || '')) {
+    if (!/^(NO_FILE)$/.test(code || '')) {
       window.setTimeout(function () {
         dom.errorPanel.scrollIntoView({ behavior: FG.util.prefersReduced() ? 'auto' : 'smooth', block: 'nearest' });
       }, 80);
@@ -411,7 +494,7 @@
       };
       img.onerror = function () {
         URL.revokeObjectURL(url);
-        reject(new Error(t('msg.unreadableImage', 'Image could not be read as a valid picture.')));
+        reject(new Error(t('msg.unreadableImage', 'Berkas gambar rusak atau korup sehingga tidak dapat dibaca. Silakan pilih foto lain dengan format JPG atau PNG yang jelas.')));
       };
       img.src = url;
     });
@@ -643,6 +726,7 @@
         dom.dropzone.classList.add('is-invalid');
         window.setTimeout(function () { dom.dropzone.classList.remove('is-invalid'); }, 700);
       }
+      resetPreview();
       showError(check.code, check.message);
       return Promise.resolve(false);
     }
@@ -654,9 +738,10 @@
       .then(function (info) {
         if (info.width < FG.config.minDimension || info.height < FG.config.minDimension) {
           URL.revokeObjectURL(info.url);
+          resetPreview();
           showError(
             'IMAGE_TOO_SMALL',
-            t('msg.imageTooSmall', 'Image resolution is too small (' + info.width + ' × ' + info.height + ' px). Minimum is ' + FG.config.minDimension + ' px.')
+            t('msg.imageTooSmall', 'Resolusi gambar terlalu kecil (' + info.width + ' × ' + info.height + ' px). Minimal ' + FG.config.minDimension + ' px.')
           );
           return false;
         }
@@ -670,7 +755,8 @@
         return true;
       })
       .catch(function () {
-        showError('UNREADABLE_IMAGE', t('msg.unreadableImage', 'Image cannot be decoded. Please try another JPG or PNG file.'));
+        resetPreview();
+        showError('UNREADABLE_IMAGE', t('msg.unreadableImage', 'Berkas gambar rusak atau korup sehingga tidak dapat dibaca. Silakan pilih foto lain dengan format JPG atau PNG yang jelas.'));
         return false;
       });
   }
@@ -962,11 +1048,23 @@
 
     if (dom.errorPanel && !dom.errorPanel.hidden && dom.errorCode) {
       var curCode = dom.errorCode.textContent.trim();
+      if (dom.errorTitle) {
+        var isFileCheck = /^(UNREADABLE_IMAGE|INVALID_FORMAT|EMPTY_FILE|FILE_TOO_LARGE|IMAGE_TOO_SMALL)$/.test(curCode || '');
+        dom.errorTitle.textContent = isFileCheck
+          ? t('upload.fileErrorTitle', 'Berkas tidak valid')
+          : t('upload.errorTitle', 'Analisis gagal');
+      }
       if (curCode === 'SIMULATED_ERROR' && dom.errorMessage) {
         dom.errorMessage.textContent = t('msg.demoSimulatedError', 'Simulasi gagal: Terjadi kesalahan yang disimulasikan untuk menguji penanganan error. Model tidak menghasilkan prediksi.');
       } else if (curCode === 'FILE_CORRUPTED' && dom.errorMessage) {
         dom.errorMessage.textContent = t('msg.demoCorruptedError', 'Simulasi gagal: Berkas gambar rusak atau korup sehingga tidak dapat dianalisis oleh model CNN. Silakan coba lagi dengan foto yang jelas.');
+      } else if (curCode === 'UNREADABLE_IMAGE' && dom.errorMessage) {
+        dom.errorMessage.textContent = t('msg.unreadableImage', 'Berkas gambar rusak atau korup sehingga tidak dapat dibaca. Silakan pilih foto lain dengan format JPG atau PNG yang jelas.');
       }
+    }
+
+    if (camera.isOpen) {
+      camera.applyMirror();
     }
   }
 
@@ -1013,6 +1111,17 @@
     if (dom.btnCancelCamera) dom.btnCancelCamera.addEventListener('click', camera.close);
     if (dom.btnCaptureCamera) dom.btnCaptureCamera.addEventListener('click', camera.capture);
     if (dom.btnFlipCamera) dom.btnFlipCamera.addEventListener('click', camera.flip);
+    if (dom.btnMirrorCamera) {
+      dom.btnMirrorCamera.addEventListener('click', function () {
+        camera.toggleMirror(false);
+      });
+    }
+    if (dom.cameraMirrorChip) {
+      dom.cameraMirrorChip.addEventListener('click', function (e) {
+        e.stopPropagation();
+        camera.toggleMirror(false);
+      });
+    }
 
     if (dom.btnCameraFallback) {
       dom.btnCameraFallback.addEventListener('click', function () {

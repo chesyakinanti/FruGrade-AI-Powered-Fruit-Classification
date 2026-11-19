@@ -5,10 +5,11 @@ import os
 import tensorflow as tf
 
 BASE_DIR = Path(__file__).resolve().parent
-MODEL_PATH = Path(os.getenv(
-    "FRUGRADE_MODEL_PATH",
-    str(BASE_DIR / "models" / "frugrade_aug.keras"),
-)).expanduser()
+DEFAULT_MODEL_PATH = BASE_DIR / "models" / "frugrade_final_aug_ringan.keras"
+if not DEFAULT_MODEL_PATH.is_file():
+    DEFAULT_MODEL_PATH = BASE_DIR / "models" / "frugrade_aug.keras"
+
+MODEL_PATH = Path(os.getenv("FRUGRADE_MODEL_PATH", str(DEFAULT_MODEL_PATH))).expanduser()
 
 CLASS_NAMES = [
     "FreshApple", "FreshBanana", "FreshMango", "FreshOrange", "FreshStrawberry", "FreshTomato",
