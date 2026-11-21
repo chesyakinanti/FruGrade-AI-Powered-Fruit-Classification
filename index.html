@@ -956,7 +956,7 @@
         <!-- Supported Fruits (2 cols) -->
         <div class="lg:col-span-2">
           <p class="font-headline-sm text-[14px] font-bold uppercase tracking-wider text-sunny-yellow" data-i18n="footer.fruitsTitle">Buah Didukung</p>
-          <div class="mt-3.5 flex flex-wrap gap-1.5">
+          <div class="mt-3.5 grid grid-cols-2 gap-2">
             <span class="inline-flex items-center gap-1 rounded-lg bg-warm-white/10 px-2.5 py-1 text-[12px] text-warm-white/90">🍎 <span data-i18n="fruit.apple">Apel</span></span>
             <span class="inline-flex items-center gap-1 rounded-lg bg-warm-white/10 px-2.5 py-1 text-[12px] text-warm-white/90">🍌 <span data-i18n="fruit.banana">Pisang</span></span>
             <span class="inline-flex items-center gap-1 rounded-lg bg-warm-white/10 px-2.5 py-1 text-[12px] text-warm-white/90">🍊 <span data-i18n="fruit.orange">Jeruk</span></span>
@@ -971,23 +971,23 @@
         <div class="lg:col-span-3">
           <p class="font-headline-sm text-[14px] font-bold uppercase tracking-wider text-sunny-yellow" data-i18n="footer.modelTitle">Spesifikasi Model</p>
           <ul class="mt-3.5 space-y-2 text-[12px] text-warm-white/80">
-            <li class="flex items-center justify-between gap-2 border-b border-warm-white/10 pb-1.5 sm:justify-start">
+            <li class="flex items-center gap-2">
               <span class="font-medium text-warm-white/60" data-i18n="footer.modelArchLabel">Model:</span>
               <span class="font-semibold text-warm-white font-mono">Custom CNN</span>
             </li>
-            <li class="flex items-center justify-between gap-2 border-b border-warm-white/10 pb-1.5 sm:justify-start">
+            <li class="flex items-center gap-2">
               <span class="font-medium text-warm-white/60" data-i18n="footer.modelInputLabel">Input:</span>
               <span class="font-mono text-warm-white">224 × 224 × 3 (RGB)</span>
             </li>
-            <li class="flex items-center justify-between gap-2 border-b border-warm-white/10 pb-1.5 sm:justify-start">
+            <li class="flex items-center gap-2">
               <span class="font-medium text-warm-white/60" data-i18n="footer.modelOutputLabel">Output:</span>
               <span class="text-warm-white" data-i18n="footer.modelOutputVal">12 kelas klasifikasi</span>
             </li>
-            <li class="flex items-center justify-between gap-2 border-b border-warm-white/10 pb-1.5 sm:justify-start">
+            <li class="flex items-center gap-2">
               <span class="font-medium text-warm-white/60" data-i18n="footer.modelTrainingLabel">Training:</span>
               <span class="font-semibold text-sunny-yellow">TensorFlow / Keras</span>
             </li>
-            <li class="flex items-center justify-between gap-2 pt-0.5 sm:justify-start">
+            <li class="flex items-center gap-2">
               <span class="font-medium text-warm-white/60" data-i18n="footer.modelInferenceLabel">Inference:</span>
               <span class="font-semibold text-secondary-fixed">LiteRT Runtime</span>
             </li>
