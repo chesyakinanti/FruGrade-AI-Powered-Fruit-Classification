@@ -548,25 +548,25 @@
                 <div class="flex items-center justify-between text-label-sm font-semibold text-soft-charcoal">
                   <span class="flex items-center gap-1.5">
                     <span class="icon text-[15px] sm:text-[16px] text-tertiary">memory</span>
-                    <span>TensorFlow / Keras</span>
+                    <span>LiteRT Runtime</span>
                   </span>
                   <span class="rounded-full bg-peach-orange/20 px-2 py-0.5 text-[10px] font-bold text-tertiary">224 × 224</span>
                 </div>
                 <div class="mt-2 flex items-center justify-between text-[11px] text-on-surface-variant">
-                  <span>Convolutional Feature Map</span>
+                  <span>CNN Model Inference</span>
                   <span class="font-bold text-tertiary">RGB 3-Ch</span>
                 </div>
               </div>
 
               <h3 class="mt-4 sm:mt-5 font-headline-sm text-[18px] sm:text-[20px] font-bold text-soft-charcoal" data-i18n="how.step2Title">2. Model CNN memproses</h3>
               <p class="mt-2 font-body-sm text-body-sm leading-relaxed text-on-surface-variant" data-i18n="how.step2Desc">
-                Gambar di-resize ke 224 × 224 piksel RGB, lalu melewati lapisan konvolusi model TensorFlow / Keras untuk membaca pola warna dan tekstur.
+                Gambar diubah menjadi ukuran 224 × 224 piksel RGB, kemudian diproses oleh model Custom CNN menggunakan LiteRT Runtime untuk mengenali pola warna dan tekstur.
               </p>
             </div>
 
             <div class="mt-4 sm:mt-5 flex items-center gap-2 border-t border-black/[0.05] pt-3 sm:pt-3.5 font-label-sm text-label-sm font-medium text-forest-green">
               <span class="icon text-[17px] sm:text-[18px]">memory</span>
-              <span data-i18n="how.step2Meta">TensorFlow / Keras inference</span>
+              <span data-i18n="how.step2Meta">LiteRT Runtime</span>
             </div>
           </article>
 
@@ -1030,7 +1030,7 @@
 
   <script defer src="assets/vendor/gsap.min.js"></script>
   <script defer src="assets/vendor/ScrollTrigger.min.js"></script>
-  <script defer src="assets/js/i18n.js?v=40"></script>
+  <script defer src="assets/js/i18n.js?v=41"></script>
   <script defer src="assets/js/config.js?v=40"></script>
   <script defer src="assets/js/store.js?v=40"></script>
   <script defer src="assets/js/api.js?v=40"></script>

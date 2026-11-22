@@ -4,7 +4,7 @@
   "private": true,
   "description": "FruGrade - front-end klasifikasi jenis & kesegaran buah berbasis CNN",
   "scripts": {
-    "build": "tailwindcss -i ./src/input.css -o ./assets/css/app.css --minify",
+    "build": "tailwindcss -i ./src/input.css -o ./assets/css/app.css",
     "watch": "tailwindcss -i ./src/input.css -o ./assets/css/app.css --watch",
     "serve": "python -m http.server 4321",
     "dev": "npm run build && npm run serve"
