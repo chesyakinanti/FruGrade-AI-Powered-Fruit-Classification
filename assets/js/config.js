@@ -26,8 +26,10 @@
      */
     mode: 'live',
 
-    // Frontend dan backend direncanakan menggunakan satu domain.
-    apiBase: '',
+    // Pakai backend LiteRT lokal saat dibuka dari localhost; tetap satu domain saat deploy.
+    apiBase: (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port !== '5001'
+      ? 'http://127.0.0.1:5001'
+      : '',
     predictPath: '/predict',
     requestTimeout: 30000,
 
