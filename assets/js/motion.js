@@ -12,6 +12,7 @@
   var reduced = FG.util.prefersReduced();
   var hasGsap = typeof window.gsap !== 'undefined';
 
+  // Menampilkan semua elemen tanpa animasi saat reduced-motion atau tanpa GSAP
   function showEverything() {
     $$('[data-reveal]').forEach(function (el) { el.classList.add('is-in'); });
     $$('[data-hero-item]').forEach(function (el) {
@@ -22,6 +23,7 @@
   }
 
   /* ---------------- header ---------------- */
+  // Menambah class is-scrolled pada header saat halaman di-scroll
   function initHeader() {
     var header = document.getElementById('site-header');
     if (!header) return;
@@ -33,6 +35,7 @@
   }
 
   /* ---------------- mode (mock / live) ---------------- */
+  // Mengatur label mode (Model aktif / Mode demo) dan menyembunyikan panel demo jika mode live
   function initModeState() {
     if (!window.FG || !FG.config) return;
     var live = FG.config.mode === 'live';
@@ -51,6 +54,7 @@
   }
 
   /* ---------------- active nav & scrollspy ---------------- */
+  // Menandai link navigasi aktif dan menjalankan scrollspy di halaman Beranda
   function initNav() {
     var page = document.body.getAttribute('data-page') || 'home';
     var isHome = page === 'home';
@@ -211,6 +215,7 @@
   }
 
   /* ---------------- reveal on scroll ---------------- */
+  // Memunculkan elemen bertahap saat masuk viewport memakai IntersectionObserver
   function initReveal() {
     var els = $$('[data-reveal]');
     if (!els.length) return;
@@ -241,6 +246,7 @@
   }
 
   /* ---------------- hero timeline ---------------- */
+  // Menjalankan animasi masuk pada bagian Hero Beranda dengan GSAP
   function initHero() {
     var hero = $('[data-hero]');
     if (!hero) return;
@@ -286,6 +292,7 @@
   }
 
   /* ---------------- count up ---------------- */
+  // Menganimasikan angka hitung naik (counter) saat terlihat di layar
   function initCounters() {
     var els = $$('[data-count-to]');
     if (!els.length) return;
@@ -320,6 +327,7 @@
   }
 
   /* ---------------- 3D tilt ---------------- */
+  // Memberikan efek miring 3D ringan mengikuti pointer pada kartu
   function initTilt() {
     if (reduced || !hasGsap || FG.util.isTouch()) return;
 
@@ -345,6 +353,7 @@
   }
 
   /* ---------------- magnetic buttons ---------------- */
+  // Membuat tombol utama tertarik ringan ke arah kursor saat hover
   function initMagnetic() {
     if (reduced || !hasGsap || FG.util.isTouch()) return;
 
@@ -366,6 +375,7 @@
   }
 
   /* ---------------- parallax ---------------- */
+  // Menggerakkan elemen latar dengan efek parallax saat scroll
   function initParallax() {
     if (reduced || !hasGsap || typeof window.ScrollTrigger === 'undefined') return;
     window.gsap.registerPlugin(window.ScrollTrigger);
@@ -386,6 +396,7 @@
   }
 
   /* ---------------- page transitions ---------------- */
+  // Menangani transisi fade halus saat berpindah halaman internal
   function initPageTransitions() {
     if (reduced) return;
 
@@ -414,6 +425,7 @@
   }
 
   /* ---------------- boot ---------------- */
+  // Titik awal inisialisasi seluruh modul animasi dan navigasi
   function init() {
     initModeState();
     initHeader();

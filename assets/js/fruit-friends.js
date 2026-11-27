@@ -11,6 +11,7 @@
   var isTouch = FG.util.isTouch();
   var uid = 0;
 
+  // Membuat elemen SVG mata dan mulut untuk wajah maskot buah
   function face(cx1, cx2, cy, mouth) {
     return (
       '<g class="eye">' +
@@ -25,6 +26,7 @@
     );
   }
 
+  // Kumpulan template SVG maskot untuk ke-6 jenis buah
   var TEMPLATES = {
     apple: function (id) {
       return (
@@ -170,6 +172,7 @@
   };
 
   /* ---------------- mount ---------------- */
+  // Memasang SVG maskot ke elemen ber-atribut data-mascot
   function mount() {
     FG.util.$$('[data-mascot]').forEach(function (el) {
       if (el.getAttribute('data-mounted') === '1') return;
@@ -189,6 +192,7 @@
   }
 
   /* ---------------- eye tracking ---------------- */
+  // Menggerakkan pupil mata maskot mengikuti posisi kursor
   function initEyes() {
     if (reduced || isTouch) return;
 
@@ -244,6 +248,7 @@
   }
 
   /* ---------------- moods ---------------- */
+  // Mengubah ekspresi maskot (mis. segar/senang atau busuk/sedih)
   function setMood(selectorOrEl, mood) {
     var el = typeof selectorOrEl === 'string' ? FG.util.$(selectorOrEl) : selectorOrEl;
     if (!el) return;
@@ -252,6 +257,7 @@
   }
 
   /* ---------------- confetti ---------------- */
+  // Memunculkan efek confetti perayaan pada hasil buah segar
   function celebrate(originEl) {
     if (reduced || !window.gsap) return;
     var origin = originEl && originEl.getBoundingClientRect ? originEl.getBoundingClientRect() : null;
@@ -302,6 +308,7 @@
     }, 2400);
   }
 
+  // Mendaftarkan helper maskot ke namespace global dan menjalankan saat halaman siap
   FG.fruit = {
     mount: mount,
     setMood: setMood,

@@ -12,6 +12,8 @@
   var $ = FG.util.$;
   var $$ = FG.util.$$;
 
+  // State lokal halaman unggah (file aktif, dimensi gambar, tab aktif, timer progres)
+  // === BAGIAN 1: State Halaman & Helper Terjemahan ===
   var dom = {};
   var state = {
     file: null,
@@ -24,6 +26,7 @@
     selectedDemoScenario: null
   };
 
+  // Helper terjemahan teks i18n khusus halaman unggah
   function t(key, fallback) {
     if (FG.i18n && typeof FG.i18n.t === 'function') {
       return FG.i18n.t(key, fallback);
@@ -31,6 +34,7 @@
     return fallback != null ? fallback : key;
   }
 
+  // === BAGIAN 2: Kontrol Kamera Live (Buka, Cermin, Putar, Jepret) ===
   /* ---------------- Camera State & Controller ---------------- */
   var camera = {
     stream: null,
@@ -39,6 +43,7 @@
     isMirrored: false,
     availableVideoInputs: 0,
 
+    // Membuka tab kamera, memeriksa izin konteks aman (HTTPS/localhost), lalu memulai stream
     open: function () {
       setTab('camera');
 
@@ -70,6 +75,7 @@
       camera.startStream();
     },
 
+    // Menerapkan orientasi cermin horizontal pada pratinjau video kamera
     applyMirror: function () {
       if (dom.cameraVideo) {
         dom.cameraVideo.style.transform = camera.isMirrored ? 'scaleX(-1)' : 'scaleX(1)';
@@ -91,6 +97,7 @@
       }
     },
 
+    // Menyalakan atau mematikan mode cermin kamera lalu menyimpannya di localStorage
     toggleMirror: function (silent) {
       camera.isMirrored = !camera.isMirrored;
       try {
@@ -105,6 +112,7 @@
       }
     },
 
+    // Mengakses perangkat kamera via navigator.mediaDevices.getUserMedia
     startStream: function () {
       camera.stopStream();
 
@@ -155,6 +163,7 @@
         });
     },
 
+    // Menerjemahkan error izin/perangkat kamera menjadi pesan yang mudah dipahami
     handleError: function (err) {
       if (dom.cameraLoading) dom.cameraLoading.classList.add('hidden');
       var name = (err && err.name) || '';
@@ -191,6 +200,7 @@
       }
     },
 
+    // Menghentikan seluruh track kamera aktif dan mengosongkan sumber video
     stopStream: function () {
       if (camera.stream) {
         camera.stream.getTracks().forEach(function (track) {
@@ -203,6 +213,7 @@
       }
     },
 
+    // Menutup mode kamera dan kembali ke tab unggah berkas
     close: function () {
       camera.stopStream();
       camera.isOpen = false;
@@ -210,6 +221,7 @@
       setTab('upload');
     },
 
+    // Mengganti kamera depan/belakang (atau membalik cermin jika hanya ada 1 kamera)
     flip: function () {
       // If single camera detected (e.g. laptop webcam), flip action toggles mirror orientation
       if (camera.availableVideoInputs <= 1 && camera.stream) {
@@ -222,6 +234,7 @@
       FG.util.toast(t('msg.cameraSwitched', 'Mengalihkan kamera: ') + (camera.facingMode === 'user' ? 'Depan' : 'Belakang'), { duration: 1800 });
     },
 
+    // Mengambil foto dari video kamera ke canvas lalu memasukkannya ke alur handleFile()
     capture: function () {
       if (!dom.cameraVideo || !camera.stream) return;
 
@@ -285,7 +298,9 @@
     }
   };
 
+  // === BAGIAN 3: Menyimpan Referensi Elemen HTML (DOM Cache) ===
   /* ---------------- DOM Cache ---------------- */
+  // Menyimpan referensi seluruh elemen DOM di halaman unggah
   function cache() {
     dom.input = $('#file-input');
     dom.cameraInput = $('#camera-input');
@@ -341,7 +356,9 @@
     dom.mascot = $('#upload-mascot');
   }
 
+  // === BAGIAN 4: Pergantian Tab Upload vs Kamera ===
   /* ---------------- Tab Switching ---------------- */
+  // Berpindah tampilan antara tab Unggah Berkas dan tab Kamera
   function setTab(tab) {
     state.activeTab = tab;
 
@@ -384,6 +401,7 @@
     }
   }
 
+  // === BAGIAN 5: Helper Tombol, Error Panel, & Validasi File ===
   /* ---------------- Helpers ---------------- */
   function setActionButtonsDisabled(disabled) {
     var btns = [dom.replace, dom.retakeCamera, dom.remove];
@@ -409,6 +427,7 @@
     });
   }
 
+  // Mengaktifkan atau menonaktifkan tombol analisis utama (Pindai Buah)
   function setAnalyzeEnabled(on) {
     if (!dom.analyze) return;
     dom.analyze.disabled = !on;
@@ -430,6 +449,7 @@
     }
   }
 
+  // Menampilkan kotak error validasi atau kegagalan analisis pada halaman unggah
   function showError(code, message) {
     if (!dom.errorPanel) return;
     dom.errorPanel.hidden = false;
@@ -452,6 +472,7 @@
     }
   }
 
+  // Memvalidasi ekstensi file (JPG/JPEG/PNG) dan batas ukuran (maks 10 MB)
   function validate(file) {
     var cfg = FG.config;
     if (!file) return { ok: false, code: 'NO_FILE', message: t('msg.noFile', 'No image selected.') };
@@ -485,6 +506,7 @@
     return { ok: true };
   }
 
+  // Membaca dimensi gambar di browser untuk memastikan gambar tidak rusak dan >= 64x64 px
   function decode(file) {
     return new Promise(function (resolve, reject) {
       var url = URL.createObjectURL(file);
@@ -507,7 +529,9 @@
     }
   }
 
+  // === BAGIAN 6: Pratinjau Gambar & Reset Tampilan ===
   /* ---------------- Preview ---------------- */
+  // Menampilkan pratinjau gambar beserta metadata nama, format, ukuran, dan resolusi
   function renderPreview(file, info) {
     releasePreview();
     state.previewUrl = info.url;
@@ -558,6 +582,7 @@
     }
   }
 
+  // Mengatur ulang area pratinjau kembali ke kondisi awal sebelum ada foto
   function resetPreview() {
     releasePreview();
     state.file = null;
@@ -597,6 +622,7 @@
     if (dom.mascot) FG.fruit.setMood(dom.mascot, null);
   }
 
+  // === BAGIAN 7: Animasi Tahapan & Progress Bar Analisis ===
   /* ---------------- Processing ---------------- */
   function setProgress(pct) {
     var p = FG.util.clamp(pct, 0, 100);
@@ -662,6 +688,7 @@
     ][idx] || t('upload.processingTitle', 'Processing…');
   }
 
+  // Memulai animasi tahapan pemrosesan sambil menunggu respons API backend
   function startProcessing() {
     if (!dom.processing) return;
     dom.processing.hidden = false;
@@ -708,6 +735,7 @@
     setProgress(0);
   }
 
+  // Menyelesaikan indikator progres pemrosesan setelah hasil prediksi diterima
   function finishProcessing() {
     completeStages();
     setProgress(100);
@@ -715,8 +743,10 @@
     clearInterval(state.progressTimer);
   }
 
+  // === BAGIAN 8: Penanganan File Terpadu (Upload & Kamera) ===
   /* ---------------- Shared File Handling ---------------- */
   // Unified flow: Device Upload OR Camera Capture passes through here
+  // Alur terpadu validasi, decode, dan pratinjau untuk gambar dari perangkat maupun kamera
   function handleFile(file) {
     if (state.busy) return Promise.resolve(false);
 
@@ -761,11 +791,13 @@
       });
   }
 
+  // === BAGIAN 9: Eksekusi Analisis & Skenario Demo ===
   /* ---------------- Demo Scenarios Selection & Execution ---------------- */
   /**
    * Hanya memilih skenario dan menampilkan preview gambar.
    * SAMA SEKALI TIDAK menjalankan simulasi atau analisis.
    */
+  // Memuat gambar contoh bawaan dan mengikat pilihan skenario uji demo
   function selectDemoScenario(scenario, fruit, evt) {
     if (evt) {
       if (typeof evt.preventDefault === 'function') evt.preventDefault();
@@ -902,6 +934,7 @@
   /**
    * Menjalankan analisis model normal untuk gambar upload perangkat atau jepretan kamera.
    */
+  // Mengirim foto ke FG.api.predict() (backend LiteRT), menyimpan hasil ke store, lalu buka result.html
   function executeStandardAnalysis() {
     return FG.api
       .predict(state.file)
@@ -953,6 +986,7 @@
   /**
    * Hanya dipanggil saat pengguna mengklik tombol Pindai Buah.
    */
+  // Menangani klik tombol Pindai Buah dan menentukan alur standar atau skenario demo
   function handleAnalyzeClick(e) {
     if (e) {
       if (typeof e.preventDefault === 'function') e.preventDefault();
@@ -997,7 +1031,9 @@
     });
   }
 
+  // === BAGIAN 10: Sinkronisasi Bahasa (ID/EN) ===
   /* ---------------- Language Change Observer ---------------- */
+  // Memperbarui teks status pratinjau dan label tombol saat bahasa diubah
   function onLanguageChange() {
     if (state.file) {
       if (state.selectedDemoScenario === 'error') {
@@ -1068,7 +1104,9 @@
     }
   }
 
+  // === BAGIAN 11: Event Listener & Inisialisasi Halaman ===
   /* ---------------- Events Binding ---------------- */
+  // Mengikat seluruh event klik, drag-and-drop, input file, dan kamera
   function bind() {
     // Normal file input
     if (dom.input) {
@@ -1241,6 +1279,7 @@
   }
 
   /* ---------------- Initialization ---------------- */
+  // Titik awal inisialisasi halaman unggah saat DOM siap
   function init() {
     cache();
     bind();

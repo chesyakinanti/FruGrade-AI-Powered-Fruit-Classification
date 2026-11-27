@@ -12,6 +12,7 @@
      - Checkpoint deployment: .tflite
    ============================================================ */
 
+// === BAGIAN 0: Pembungkus IIFE & Namespace Global ===
 (function () {
   'use strict';
 
@@ -19,6 +20,7 @@
 
   var params = new URLSearchParams(window.location.search);
 
+  // === BAGIAN 1: Objek Konfigurasi Pusat (FG.config) ===
   FG.config = {
     /**
      * 'mock'  -> prediksi disimulasikan di browser
@@ -57,6 +59,7 @@
     },
 
     // 12 Kelas Dataset FruGrade
+    // Daftar 12 label kelas teknis sesuai urutan output model CNN
     classes: [
       'FreshApple',
       'FreshBanana',
@@ -73,6 +76,7 @@
     ],
 
     // Mapping 6 jenis buah
+    // Data 6 jenis buah (nama Indonesia, Inggris, nama ilmiah, gambar contoh)
     fruits: {
       apple: {
         id: 'apple',
@@ -126,6 +130,7 @@
     }
   };
 
+  // === BAGIAN 2: Parser Label Kelas Teknis (FG.parseClass) ===
   /**
    * Mengurai label kelas teknis menjadi informasi buah.
    */
@@ -216,8 +221,10 @@
     };
   };
 
+  // === BAGIAN 3: Kumpulan Fungsi Utilitas (FG.util) ===
   // Utilities
   FG.util = {
+    // Helper akses DOM (pengganti document.querySelector dan querySelectorAll)
     $: function (sel, ctx) {
       return (ctx || document).querySelector(sel);
     },
@@ -240,6 +247,7 @@
         window.matchMedia('(hover: none)').matches;
     },
 
+    // Memformat ukuran file menjadi satuan B, KB, atau MB
     formatBytes: function (bytes) {
       if (!bytes && bytes !== 0) return '—';
       if (bytes < 1024) return bytes + ' B';
@@ -249,6 +257,7 @@
       return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
     },
 
+    // Memformat angka desimal (0..1) menjadi string persentase
     formatPercent: function (value, digits) {
       if (typeof value !== 'number' || isNaN(value)) {
         return '—';
@@ -269,6 +278,7 @@
       return parts.length > 1 ? parts.pop() : '';
     },
 
+    // Mencegah XSS dengan meng-escape karakter khusus HTML
     escapeHtml: function (str) {
       return String(str == null ? '' : str)
         .replace(/&/g, '&amp;')
@@ -328,6 +338,7 @@
     }
   };
 
+  // === BAGIAN 4: Validator Kontrak Respons API (FG.validateResult) ===
   // Validasi ringan untuk kontrak API
   FG.validateResult = function (data) {
     if (!data || typeof data !== 'object') return false;

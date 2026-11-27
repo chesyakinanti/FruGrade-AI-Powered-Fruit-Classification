@@ -10,11 +10,14 @@
 
   window.FG = window.FG || {};
 
+  // Mengubah huruf pertama string menjadi huruf kapital
+  // === BAGIAN 1: Helper Pembentuk Data Simulasi (Mode Mock) ===
   function capitalize(str) {
     if (!str) return '';
     return str.charAt(0).toUpperCase() + str.slice(1);
   }
 
+  // Membentuk label kelas teknis seperti FreshApple atau RottenMango
   function classTechnicalLabel(fruitKey, freshness) {
     var capFruit = {
       apple: 'Apple',
@@ -28,6 +31,7 @@
     return (freshness === 'rotten' ? 'Rotten' : 'Fresh') + capFruit;
   }
 
+  // Membuat distribusi probabilitas simulasi 12 kelas untuk mode demo
   function mock12ClassDistribution(selectedFruit, selectedFreshness, topConfidence) {
     var topLabel = classTechnicalLabel(selectedFruit, selectedFreshness);
     var list = [{ label: topLabel, p: topConfidence }];
@@ -57,6 +61,7 @@
     return list.sort(function (a, b) { return b.p - a.p; });
   }
 
+  // Menebak jenis buah dari nama file saat berjalan di mode demo
   function guessFruit(name) {
     var n = String(name || '').toLowerCase();
     if (/apel|apple|malus/.test(n)) return 'apple';
@@ -70,6 +75,7 @@
 
   function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
+  // Menyusun respons JSON tiruan untuk skenario demo (fresh atau rotten)
   function mockPayload(file, scenario) {
     var guess = guessFruit(file && file.name);
     var availableFruits = ['apple', 'banana', 'orange', 'mango', 'strawberry', 'tomato'];
@@ -109,6 +115,8 @@
     return null;
   }
 
+  // API utama untuk memilih mode live (backend Flask) atau simulasi demo
+  // === BAGIAN 2: Pintu Utama Prediksi (Mode Mock & Live) ===
   FG.api = {
     forcedScenario: null,
 
@@ -143,6 +151,8 @@
       });
     },
 
+    // Mengirim gambar asli via HTTP POST multipart ke endpoint /predict backend
+    // === BAGIAN 3: Pengiriman Foto ke Backend Flask (POST /predict) ===
     live: function (file) {
       var cfg = FG.config;
       var url = (cfg.apiBase || '') + cfg.predictPath;
@@ -207,6 +217,7 @@
         });
     },
 
+    // === BAGIAN 4: Pemuat Gambar Contoh untuk Demo ===
     /** Untuk tombol coba contoh di halaman upload */
     sampleFile: function (fruitId) {
       var map = {

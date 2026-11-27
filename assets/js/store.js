@@ -7,10 +7,13 @@
 
   window.FG = window.FG || {};
 
+  // === BAGIAN 1: Key Penyimpanan Sementara (sessionStorage) ===
   // Satu-satunya "database" demo: sessionStorage milik tab yang aktif.
   var KEY = 'frugrade:last-result';
 
+  // === BAGIAN 2: Simpan, Muat, & Hapus Hasil Analisis ===
   FG.store = {
+    // Menyimpan hasil prediksi dan thumbnail gambar ke sessionStorage tab aktif
     save: function (payload) {
       try {
         sessionStorage.setItem(KEY, JSON.stringify(payload));
@@ -26,6 +29,7 @@
       }
     },
 
+    // Mengambil kembali data hasil prediksi terakhir dari sessionStorage
     load: function () {
       try {
         var raw = sessionStorage.getItem(KEY);
@@ -38,10 +42,12 @@
       }
     },
 
+    // Menghapus hasil prediksi tersimpan saat pengguna memindai ulang
     clear: function () {
       try { sessionStorage.removeItem(KEY); } catch (err) { /* noop */ }
     },
 
+    // === BAGIAN 3: Pembuat Thumbnail Gambar via Canvas ===
     /**
      * Buat thumbnail untuk disimpan & ditampilkan di halaman hasil.
      * @param {File|Blob|string} source

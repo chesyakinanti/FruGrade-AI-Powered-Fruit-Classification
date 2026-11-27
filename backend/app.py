@@ -5,6 +5,7 @@ Input contract: one JPG/JPEG/PNG image, decoded as RGB, resized to 224x224.
 Pixel values are intentionally kept in [0, 255] because the model itself
 contains Rescaling(1./255). Do not normalize a second time here.
 """
+# === BAGIAN 1: Import Library ===
 from __future__ import annotations
 
 import io
@@ -20,6 +21,8 @@ from flask_cors import CORS
 from PIL import Image, UnidentifiedImageError
 from werkzeug.exceptions import RequestEntityTooLarge
 
+# Lokasi file model Keras dan batas validasi berkas gambar
+# === BAGIAN 2: Pengaturan Lokasi Model, Batas Upload, & Daftar 12 Kelas ===
 BASE_DIR = Path(__file__).resolve().parent
 DEFAULT_MODEL_PATH = BASE_DIR / "models" / "frugrade_final_aug_ringan.keras"
 MODEL_PATH = Path(os.getenv("FRUGRADE_MODEL_PATH", str(DEFAULT_MODEL_PATH))).expanduser()
@@ -44,6 +47,7 @@ CLASS_NAMES = [
     "RottenTomato",
 ]
 
+# Pemetaan nama buah Inggris (dari label kelas) ke kunci buah frontend
 FRUIT_NAMES = {
     "Apple": "apple",
     "Banana": "banana",
@@ -53,6 +57,8 @@ FRUIT_NAMES = {
     "Tomato": "tomato",
 }
 
+# Inisialisasi server Flask dan konfigurasi CORS untuk origin yang diizinkan
+# === BAGIAN 3: Setup Flask, CORS, & Pengaman Akses Model ===
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = MAX_FILE_BYTES
 
@@ -66,15 +72,19 @@ allowed_origins = [
 ]
 CORS(app, resources={r"/predict": {"origins": allowed_origins}, r"/health": {"origins": allowed_origins}})
 
+# Variabel global model Keras dan lock agar pemuatan aman dari banyak request
 _model: Any | None = None
 _model_lock = threading.Lock()
 _model_error: str | None = None
 
 
+# Error khusus saat file checkpoint Keras tidak ditemukan atau gagal dimuat
 class ModelUnavailable(RuntimeError):
     """Raised when the checkpoint cannot be found or loaded safely."""
 
 
+# Memuat serta memvalidasi bentuk input/output dan layer Rescaling model Keras
+# === BAGIAN 4: Memuat Model .keras Sekali Saja (Lazy Loading) ===
 def _load_model_once():
     """Load and validate the Keras model once per backend process."""
     global _model, _model_error
@@ -133,10 +143,13 @@ def _load_model_once():
             raise ModelUnavailable(f"Model gagal dimuat atau tidak sesuai: {exc}") from exc
 
 
+# Membentuk respons JSON standar ketika permintaan gagal
+# === BAGIAN 5: Helper Pesan Error & Preprocessing Gambar 224x224 ===
 def _json_error(code: str, message: str, status: int):
     return jsonify({"ok": False, "code": code, "message": message}), status
 
 
+# Mendekode gambar, mengecek dimensi minimal, dan resize menjadi 224x224 float32
 def _decode_and_preprocess(file_bytes: bytes) -> np.ndarray:
     """Decode to RGB and resize exactly like the training image pipeline.
 
@@ -165,6 +178,8 @@ def _decode_and_preprocess(file_bytes: bytes) -> np.ndarray:
     return np.expand_dims(image_array, axis=0)
 
 
+# Memisahkan label kelas (mis. FreshApple) menjadi nama buah dan kondisi kesegaran
+# === BAGIAN 6: Memecah Label Kelas Menjadi Jenis Buah & Kesegaran ===
 def _class_details(class_name: str) -> tuple[str, str]:
     if class_name.startswith("Fresh"):
         freshness = "fresh"
@@ -181,6 +196,8 @@ def _class_details(class_name: str) -> tuple[str, str]:
     return fruit_key, freshness
 
 
+# Endpoint GET /health untuk memeriksa status server dan kesiapan model Keras
+# === BAGIAN 7: Endpoint Cek Kesehatan Server (/health) ===
 @app.get("/health")
 def health():
     try:
@@ -204,6 +221,8 @@ def health():
         }), 503
 
 
+# Endpoint POST /predict untuk menerima unggahan gambar dan memprediksi lewat Keras
+# === BAGIAN 8: Endpoint Utama Prediksi Buah (POST /predict) ===
 @app.post("/predict")
 def predict():
     uploaded = request.files.get("file")
@@ -282,11 +301,14 @@ def predict():
     }), 200
 
 
+# Handler error jika ukuran berkas unggahan melebihi batas maksimal 10 MB
+# === BAGIAN 9: Handler File Kebesaran (413) & Server Lokal Port 5000 ===
 @app.errorhandler(RequestEntityTooLarge)
 def handle_too_large(_error):
     return _json_error("FILE_TOO_LARGE", "Ukuran gambar maksimal 10 MB.", 413)
 
 
+# Titik masuk utama untuk menjalankan server Flask Keras lokal pada port 5000
 if __name__ == "__main__":
     print("FruGrade API starting at http://127.0.0.1:5000")
     print("Model checkpoint:", MODEL_PATH)

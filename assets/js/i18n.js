@@ -12,6 +12,7 @@
   var STORAGE_KEY = 'fg_lang';
   var DEFAULT_LANG = 'id';
 
+  // Kamus terjemahan teks antarmuka Bahasa Indonesia (id) dan Inggris (en)
   var translations = {
     id: {
       // Common / Navigation
@@ -574,9 +575,11 @@
     }
   };
 
+  // Pengelola bahasa aktif, penyimpanan pilihan di localStorage, dan pembaruan teks DOM
   var FG_I18N = {
     lang: DEFAULT_LANG,
 
+    // Membaca bahasa tersimpan saat halaman dimuat dan menerapkannya ke DOM
     init: function () {
       var saved = localStorage.getItem(STORAGE_KEY);
       this.lang = (saved === 'en' || saved === 'id') ? saved : DEFAULT_LANG;
@@ -588,6 +591,7 @@
       return this.lang;
     },
 
+    // Mengubah bahasa aktif (id/en), menyimpan ke localStorage, dan memicu event render ulang
     setLang: function (newLang) {
       if (newLang !== 'id' && newLang !== 'en') return;
       this.lang = newLang;
@@ -601,6 +605,7 @@
       document.dispatchEvent(new CustomEvent('fg:langchange', { detail: { lang: newLang } }));
     },
 
+    // Mengambil teks terjemahan berdasarkan key atau memakai nilai fallback
     t: function (key, fallback) {
       var current = translations[this.lang];
       if (current && current[key] != null) return current[key];
@@ -609,6 +614,7 @@
       return fallback != null ? fallback : key;
     },
 
+    // Mengikat klik pada tombol pemilih bahasa (ID / EN)
     bindButtons: function () {
       var self = this;
       document.addEventListener('click', function (e) {
@@ -619,6 +625,7 @@
       });
     },
 
+    // Memperbarui teks, atribut aria/title, dan tombol bahasa aktif di seluruh halaman
     apply: function () {
       var lang = this.lang;
       document.documentElement.lang = lang;

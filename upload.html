@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+<!-- Pengaturan metadata halaman dan pemuatan file CSS halaman Unggah -->
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -22,6 +23,7 @@
   <a class="skip-link" href="#main" data-i18n="nav.skip">Lewati ke konten</a>
 
   <!-- ================= HEADER ================= -->
+  <!-- Navigasi atas halaman Pindai dan tombol pemilih bahasa (ID/EN) -->
   <header id="site-header" class="site-header fixed inset-x-0 top-0 z-50 border-b border-black/[0.04] bg-warm-white/85 backdrop-blur-md">
     <div class="shell relative flex h-[72px] items-center justify-between gap-4">
       <div class="flex items-center flex-none">
@@ -105,6 +107,7 @@
       <!-- ================= GRID ================= -->
       <div class="mt-7 grid grid-cols-1 items-start gap-5 lg:grid-cols-12 lg:gap-6">
         <!-- LEFT: INPUT METHODS -->
+        <!-- Kolom kiri: pilihan sumber gambar (unggah berkas perangkat atau kamera langsung) -->
         <section class="flex flex-col gap-4 lg:col-span-6" aria-labelledby="step-upload">
           <div class="panel p-5 sm:p-6" data-reveal>
             <div class="flex items-start justify-between gap-3">
@@ -372,6 +375,7 @@
         </section>
 
         <!-- RIGHT: PREVIEW & CONFIRMATION -->
+        <!-- Kolom kanan: pratinjau gambar terpilih, info file, indikator proses, dan tombol Pindai Buah -->
         <section class="flex flex-col gap-4 lg:col-span-6 lg:sticky lg:top-[88px]" aria-labelledby="step-preview">
           <div id="preview-card" class="panel p-5 sm:p-6" data-reveal>
             <div class="flex items-start justify-between gap-3">
@@ -566,6 +570,7 @@
   </main>
 
   <!-- ================= MODERN ELEVATED FOOTER ================= -->
+  <!-- Footer halaman unggah -->
   <footer class="border-t border-black/[0.06] bg-forest-green text-warm-white pb-24 pt-10 sm:pt-12 md:pb-12">
     <div class="shell">
       <div class="grid grid-cols-1 gap-10 lg:grid-cols-12">
@@ -662,6 +667,7 @@
   </footer>
 
   <!-- ================= MOBILE NAV ================= -->
+  <!-- Menu navigasi bawah khusus layar mobile -->
   <nav class="fixed inset-x-0 bottom-0 z-50 border-t border-black/[0.05] bg-warm-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden" aria-label="Navigasi bawah">
     <div class="mx-auto flex h-16 max-w-md items-center justify-around px-2">
       <a href="index.html" class="flex min-h-[44px] min-w-[44px] flex-col items-center justify-center gap-0.5 px-2 font-label-sm text-[11px] text-on-surface-variant hover:text-forest-green" data-nav="home">
@@ -683,6 +689,7 @@
     </div>
   </nav>
 
+  <!-- Pemuatan library animasi dan skrip pengontrol halaman unggah/kamera (upload.js) -->
   <script defer src="assets/vendor/gsap.min.js"></script>
   <script defer src="assets/vendor/ScrollTrigger.min.js"></script>
   <script defer src="assets/js/i18n.js?v=40"></script>

@@ -1,4 +1,5 @@
 
+# === BAGIAN 1: Import Library & Lokasi File Model ===
 from pathlib import Path
 import tensorflow as tf
 
@@ -11,6 +12,8 @@ OUTPUT_PATH = Path("models/frugrade_final_aug_ringan.tflite")
 if not MODEL_PATH.is_file():
     raise FileNotFoundError(f"Model tidak ditemukan: {MODEL_PATH}")
 
+# Memuat model Keras (.keras) tanpa mengompilasi ulang optimizer
+# === BAGIAN 2: Memuat Model Keras Asli ===
 print("TensorFlow:", tf.__version__)
 print("Memuat model FruGrade...")
 
@@ -22,6 +25,8 @@ model = tf.keras.models.load_model(
 print("Input shape:", model.input_shape)
 print("Output shape:", model.output_shape)
 
+# Mengonversi model Keras menjadi file TFLite (.tflite) dan menyimpannya ke disk
+# === BAGIAN 3: Konversi ke TFLite (Float32) & Simpan File ===
 print("\nMemulai konversi TFLite...")
 
 converter = tf.lite.TFLiteConverter.from_keras_model(model)

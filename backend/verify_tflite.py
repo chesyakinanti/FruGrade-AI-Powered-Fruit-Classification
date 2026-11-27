@@ -1,3 +1,5 @@
+# Mengimpor library LiteRT, TensorFlow, NumPy, dan Pillow untuk pengujian paritas model
+# === BAGIAN 1: Import Library ===
 from ai_edge_litert.interpreter import Interpreter
 
 from pathlib import Path
@@ -8,6 +10,7 @@ import numpy as np
 import tensorflow as tf
 from PIL import Image
 
+# === BAGIAN 2: Lokasi Model, Gambar Uji, & Daftar 12 Kelas ===
 # Lokasi model
 KERAS_PATH = Path("models/frugrade_final_aug_ringan.keras")
 TFLITE_PATH = Path("models/frugrade_final_aug_ringan.tflite")
@@ -28,6 +31,7 @@ for path in [KERAS_PATH, TFLITE_PATH, CLASS_PATH, IMAGE_PATH]:
 with open(CLASS_PATH, "r", encoding="utf-8") as f:
     class_names = json.load(f)
 
+# === BAGIAN 3: Preprocessing Gambar Uji (Sama seperti app.py) ===
 # Preprocessing harus sama seperti backend app.py
 image = Image.open(IMAGE_PATH).convert("RGB")
 image = image.resize((224, 224), Image.Resampling.BILINEAR)
@@ -42,6 +46,7 @@ print("=== PENGUJIAN MODEL FRUGRADE ===")
 print("Gambar:", IMAGE_PATH.name)
 print("Input:", batch.shape)
 
+# === BAGIAN 4: Prediksi Menggunakan Model Keras Asli ===
 # 1. Prediksi menggunakan Keras
 keras_model = tf.keras.models.load_model(
     str(KERAS_PATH),
@@ -50,6 +55,7 @@ keras_model = tf.keras.models.load_model(
 
 keras_output = keras_model.predict(batch, verbose=0).reshape(-1)
 
+# === BAGIAN 5: Prediksi Menggunakan Model TFLite Hasil Konversi ===
 # 2. Prediksi menggunakan TFLite
 interpreter = Interpreter(
     model_path=str(TFLITE_PATH),
@@ -73,6 +79,7 @@ tflite_output = interpreter.get_tensor(
     output_detail["index"]
 ).reshape(-1)
 
+# === BAGIAN 6: Bandingkan Hasil & Cek Kesetaraan Output ===
 # 3. Bandingkan hasil
 if len(keras_output) != 12 or len(tflite_output) != 12:
     raise ValueError("Output model harus memiliki 12 kelas.")
@@ -88,6 +95,7 @@ mean_difference = float(
     np.mean(np.abs(keras_output - tflite_output))
 )
 
+# Menampilkan label prediksi teratas dan mengecek kesesuaian toleransi probabilitas
 print("\n=== HASIL KERAS ===")
 print("Label:", class_names[keras_index])
 print("Confidence:", round(float(keras_output[keras_index]) * 100, 4), "%")

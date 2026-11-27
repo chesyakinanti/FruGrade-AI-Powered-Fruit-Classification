@@ -13,9 +13,11 @@
   var $$ = FG.util.$$;
   var CIRC = 2 * Math.PI * 52;
 
+  // === BAGIAN 1: Variabel DOM & Helper Bahasa/Format ===
   var dom = {};
   var data = null;
 
+  // Menyimpan referensi elemen DOM halaman hasil agar mudah diakses ulang
   function cache() {
     dom.empty = $('#result-empty');
     dom.content = $('#result-content');
@@ -64,6 +66,7 @@
   }
 
   /* ---------------- Helpers ---------------- */
+  // Mengambil bahasa aktif halaman dari modul i18n
   function getLang() {
     return (window.FG && window.FG.i18n && typeof window.FG.i18n.getLang === 'function')
       ? window.FG.i18n.getLang()
@@ -76,6 +79,7 @@
       : (fallback || key);
   }
 
+  // Mengambil detail lengkap buah (nama, nama Latin, foto contoh) dari hasil prediksi
   function resolveFruitDetails(result) {
     var parsed = FG.parseClass(result.label || result.fruit);
     var lang = getLang();
@@ -90,6 +94,7 @@
     };
   }
 
+  // Memformat label kelas teknis (FreshApple) menjadi label tampil (Apel Segar)
   function formatDisplayLabel(rawLabel) {
     var parsed = FG.parseClass(rawLabel);
     if (parsed.fruit === 'unknown') return parsed.raw;
@@ -101,6 +106,7 @@
     return lang === 'en' ? (state + ' ' + fName) : (fName + ' ' + state);
   }
 
+  // Mengubah timestamp ISO menjadi tanggal dan jam yang rapi
   function formatDate(iso) {
     var d = iso ? new Date(iso) : new Date();
     if (isNaN(d.getTime())) d = new Date();
@@ -115,13 +121,16 @@
     }
   }
 
+  // Membuat ID unik singkat untuk catatan pemindaian
   function makeId(iso) {
     var d = iso ? new Date(iso) : new Date();
     var t = isNaN(d.getTime()) ? Date.now() : d.getTime();
     return '#FRU-' + t.toString(36).slice(-5).toUpperCase();
   }
 
+  // === BAGIAN 2: Render Hasil Utama, Confidence Ring, & Probabilitas ===
   /* ---------------- Render ---------------- */
+  // Mengisi seluruh elemen halaman hasil berdasarkan data prediksi yang dimuat
   function render(payload) {
     data = payload;
     var result = payload.result;
@@ -240,6 +249,7 @@
     animate(isFresh);
   }
 
+  // Menampilkan nilai persentase confidence dan catatan interpretasinya
   function renderConfidence(result) {
     var conf = result.confidence;
 
@@ -263,6 +273,7 @@
     }
   }
 
+  // Merender daftar 5 probabilitas kelas tertinggi beserta batang progresnya
   function renderProbabilities(result) {
     if (!dom.probList) return;
 
@@ -296,6 +307,7 @@
     }).join('');
   }
 
+  // === BAGIAN 3: Data & Tampilan Rekomendasi Penyimpanan/Penanganan ===
   /* ---------------- Recommendation Data & Render ---------------- */
   var RECOMMENDATIONS = {
     apple: {
@@ -399,6 +411,7 @@
     }
   };
 
+  // Menampilkan rekomendasi penyimpanan khusus sesuai jenis buah dan kesegarannya
   function renderRecommendation(details) {
     if (!dom.recomCard) return;
 
@@ -479,7 +492,9 @@
     if (dom.recomTipDesc) dom.recomTipDesc.textContent = tipDesc;
   }
 
+  // === BAGIAN 4: Pembuat Ringkasan Teks & HTML untuk Disalin ===
   /* ---------------- Build Summary (Lengkap) ---------------- */
+  // Menyusun teks ringkasan hasil klasifikasi yang siap disalin pengguna
   function buildSummary(res, det) {
     var result = res || (data && data.result);
     if (!result) return { plain: '', html: '' };
@@ -566,13 +581,16 @@
     return { plain: plain, html: html };
   }
 
+  // Memperbarui pratinjau ringkasan hasil yang ditampilkan di kartu bawah
   function updateSummary(result, details) {
     if (!dom.summary) return;
     var summary = buildSummary(result, details);
     dom.summary.textContent = summary.plain;
   }
 
+  // === BAGIAN 5: Animasi GSAP & Confetti Hasil Segar ===
   /* ---------------- Animation ---------------- */
+  // Menjalankan animasi angka confidence, bar probabilitas, dan confetti buah segar
   function animate(isFresh) {
     var gsap = window.gsap;
     var reduced = FG.util.prefersReduced();
@@ -632,7 +650,9 @@
     }
   }
 
+  // === BAGIAN 6: Aksi Tombol (Pindai Lagi, Salin) & Inisialisasi ===
   /* ---------------- Actions ---------------- */
+  // Mengikat aksi tombol Pindai Ulang, Salin Ringkasan, dan perubahan bahasa
   function initActions() {
     if (dom.another) {
       dom.another.addEventListener('click', function () {
@@ -709,6 +729,7 @@
   }
 
   /* ---------------- Boot ---------------- */
+  // Memuat hasil dari store saat halaman dibuka dan menampilkan empty state jika kosong
   function init() {
     cache();
     initActions();
